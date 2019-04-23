@@ -1,3 +1,3 @@
-package controller
+package solver
 
 type WebController struct{}

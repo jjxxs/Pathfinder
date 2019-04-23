@@ -1,7 +1,10 @@
 package main
 
 import (
-	"github.com/ob-algdatii-ss19/leistungsnachweis-graphiker/controller"
+	"log"
+	"os"
+
+	"github.com/ob-algdatii-ss19/leistungsnachweis-graphiker/solver"
 	"github.com/urfave/cli"
 )
 
@@ -42,6 +45,11 @@ func main() {
 			},
 		},
 	}
+
+	err := app.Run(os.Args)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func startWeb(c *cli.Context) {
@@ -52,5 +60,5 @@ func startWeb(c *cli.Context) {
 func startCli(c *cli.Context) {
 	algorithm := c.String("algorithm")
 	problem := c.String("problem")
-	controller.NewCli(algorithm, problem)
+	solver.NewCli(algorithm, problem)
 }

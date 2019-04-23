@@ -6,5 +6,5 @@ RUN go build -o main .
 
 FROM iron/go
 RUN mkdir /app
-COPY --from=build /app/main /app/
+COPY --from=build /solver /app/
 CMD ["/app/main"]

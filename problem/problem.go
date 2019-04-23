@@ -65,10 +65,15 @@ func FromFile(file string) (Problem, error) {
 type info struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
+	Type        string `json:"type"`
 }
 
 type point struct {
 	X    float32 `json:"x"`
 	Y    float32 `json:"y"`
 	Name string  `json:"name"`
+}
+
+func (p Problem) String() string {
+	return p.Info.Name
 }

@@ -1,0 +1,19 @@
+{
+    "info": {
+        "name": "Germany",
+        "description": "10 biggest german cities",
+        "type": "geographic"
+    },
+    "points": [
+        {"x": 13.23, "y": 52.31, "name": "Berlin"},
+        {"x": 10.0, "y": 53.33, "name": "Hamburg"},
+        {"x": 11.34, "y": 48.8, "name": "Munich"},
+        {"x": 6.57, "y": 50.56, "name": "Cologne"},
+        {"x": 8.41, "y": 50.7, "name": "Frankfurt"},
+        {"x": 9.11, "y": 48.47, "name": "Stuttgart"},
+        {"x": 6.47, "y": 51.14, "name": "Düsseldorf"},
+        {"x": 7.28, "y": 51.31, "name": "Dortmund"},
+        {"x": 7.1, "y": 51.27, "name": "Essen"},
+        {"x": 12.23, "y": 51.2, "name": "Leipzig"}
+    ]
+}
