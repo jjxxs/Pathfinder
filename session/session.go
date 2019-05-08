@@ -3,6 +3,7 @@ package session
 import (
 	"fmt"
 	"log"
+	"sync"
 
 	"github.com/ob-algdatii-ss19/leistungsnachweis-graphiker/algorithm"
 	"github.com/ob-algdatii-ss19/leistungsnachweis-graphiker/problem"
@@ -38,25 +39,46 @@ type Session struct {
 	Algorithm *algorithm.Algorithm
 	Problem   *problem.Problem
 	State     state
+	cycles    chan problem.Cycles
+	mutex	  *sync.Mutex
 }
 
-func NewSession(sessionId int, algorithm *algorithm.Algorithm, problem *problem.Problem) Session {
-	sess := Session{SessionId: sessionId, Algorithm: algorithm, Problem: problem, State: Initialized}
+func NewSession(sessionId int, algo *algorithm.Algorithm, prob *problem.Problem) Session {
+	sess := Session{
+		SessionId: sessionId,
+		Algorithm: algo,
+		Problem:   prob,
+		State:     Initialized,
+		cycles:    make(chan problem.Cycles),
+		mutex:      &sync.Mutex{},
+	}
 	log.Printf("created new %s", sess)
 	return sess
 }
 
 func (s *Session) Start() {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	// set state to running
 	s.State = Running
-	log.Printf("started session %s", s)
+	log.Printf("started %s", s)
+
+	go (*s.Algorithm).Solve(adj, s.cycles)
+	go s.worker()
 }
 
 func (s *Session) Stop() {
-	log.Printf("stopped session %s", s)
+	s.cond.Signal()
+	log.Printf("stopped %s", s)
 }
 
 func (s *Session) Status() {
 
+}
+
+func (s *Session) worker() {
+	for s.wg.
 }
 
 func (s Session) String() string {

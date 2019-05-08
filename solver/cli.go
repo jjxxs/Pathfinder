@@ -13,7 +13,7 @@ type CliController struct {
 }
 
 func NewCli(algorithmName, problemPath string) CliController {
-	log.Printf("started as cli")
+	log.Printf("running as cli")
 
 	alg, err := algorithm.FromString(algorithmName)
 	if err != nil {
@@ -27,6 +27,7 @@ func NewCli(algorithmName, problemPath string) CliController {
 
 	sess := session.NewSession(1, &alg, &prob)
 	sess.Start()
+	sess.Wait()
 
 	return CliController{session: sess}
 }
