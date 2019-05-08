@@ -6,15 +6,23 @@ import (
 	"io/ioutil"
 	"math"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
+// represents a 'tsp-problem' that is to be solved by the solver
 type Problem struct {
-	Info      info        `json:"info"`
-	Points    []point     `json:"points"`
-	Adjacency [][]float64 `json:"adjacency"`
+	// info about the problemset
+	Info Info `json:"Info"`
+
+	// set of points on the route
+	Points []Point `json:"points"`
+
+	// adjacency matrix, e.g. distances between the points
+	Adjacency [][]float32 `json:"adjacency"`
 }
 
+// loads a set of problems from a directory
 func FromDir(dir string) ([]Problem, error) {
 	// stat directory to test if it's accessible
 	if file, err := os.Stat(dir); err != nil {
@@ -45,8 +53,14 @@ func FromDir(dir string) ([]Problem, error) {
 			continue
 		}
 
+		// skip files that don't end with "json"
+		absFilePath := filepath.Join(dir, file.Name())
+		if filepath.Ext(absFilePath) != ".json" {
+			continue
+		}
+
 		// load problem
-		problem, err := FromFile(dir)
+		problem, err := FromFile(absFilePath)
 		if err != nil {
 			continue
 		}
@@ -56,6 +70,7 @@ func FromDir(dir string) ([]Problem, error) {
 	return problems, nil
 }
 
+// loads a problem from a file
 func FromFile(file string) (Problem, error) {
 	// stat file to test if it's accessible
 	if file, err := os.Stat(file); err != nil {
@@ -82,42 +97,53 @@ func FromFile(file string) (Problem, error) {
 	return problem, nil
 }
 
-type info struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	Type        string `json:"type"`
+// creates a new problem from given points and info
+func NewProblem(points []Point, info Info) *Problem {
+	p := Problem{Points: points, Info: info}
+	p.calculateAdjacency()
+	return &p
 }
 
-type point struct {
-	X    float64 `json:"x"`
-	Y    float64 `json:"y"`
+// contains information about a problem
+type Info struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Type        string `json:"type"` // either 'geographic' or 'euclidean'
+}
+
+type Point struct {
+	X    float32 `json:"x"`
+	Y    float32 `json:"y"`
 	Name string  `json:"name"`
 }
 
-type Cycle []point
+type Cycle []Point
 type Cycles []Cycle
 
 func (p *Problem) String() string {
 	return p.Info.Name
 }
 
+// calculates the adjacency matrix of the problem with given points
+// uses the haversine-formula to calculate distances for "geographic" problems
+// uses euclidean distance for "euclidean" problems
 func (p *Problem) calculateAdjacency() {
-	var calcDistance func(p1, p2 point) float64
+	var calcDistance func(p1, p2 Point) float32
 
 	switch pType := strings.ToLower(p.Info.Type); pType {
 	case "geographic":
 		calcDistance = haversine
-	case "cartesian":
-		calcDistance = cartesian
+	case "euclidean":
+		calcDistance = euclidean
 	default:
-		calcDistance = cartesian
+		calcDistance = euclidean
 	}
 
 	// allocate adjacency and calculate distances
-	p.Adjacency = make([][]float64, len(p.Points))
+	p.Adjacency = make([][]float32, len(p.Points))
 	for i, rowPoint := range p.Points {
 
-		adjRow := make([]float64, len(p.Points))
+		adjRow := make([]float32, len(p.Points))
 		for j, colPoint := range p.Points {
 			adjRow[j] = calcDistance(rowPoint, colPoint)
 		}
@@ -129,8 +155,9 @@ func (p *Problem) calculateAdjacency() {
 // the earths radius in kilometer, used to calculate distances on spheres using the haversine formula
 const EarthRadius = 6371
 
-func haversine(p1, p2 point) float64 {
-	deg2rad := func(deg float64) float64 { return (math.Pi * deg) / 180 }
+// calculates the shortest point between two points located on a sphere (the earth)
+func haversine(p1, p2 Point) float32 {
+	deg2rad := func(deg float32) float64 { return (math.Pi * float64(deg)) / 180 }
 
 	lat1 := deg2rad(p1.X)
 	lat2 := deg2rad(p2.X)
@@ -143,11 +170,12 @@ func haversine(p1, p2 point) float64 {
 	a := math.Pow(math.Sin(deltaLat/2), 2) + math.Cos(lat1)*math.Cos(lat2)*math.Pow(math.Sin(deltaLong/2), 2)
 	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
 
-	return EarthRadius * c
+	return float32(EarthRadius * c)
 }
 
-func cartesian(p1, p2 point) float64 {
-	deltaX := math.Abs(p1.X - p2.X)
-	deltaY := math.Abs(p1.Y - p2.Y)
-	return math.Sqrt(math.Pow(deltaX, 2) + math.Pow(deltaY, 2))
+// calculates the shortest distance between two points in an euclidean system
+func euclidean(p1, p2 Point) float32 {
+	deltaX := math.Abs(float64(p1.X - p2.X))
+	deltaY := math.Abs(float64(p1.Y - p2.Y))
+	return float32(math.Sqrt(math.Pow(deltaX, 2) + math.Pow(deltaY, 2)))
 }
