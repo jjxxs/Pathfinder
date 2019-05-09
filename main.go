@@ -4,8 +4,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/ob-algdatii-ss19/leistungsnachweis-graphiker/solver"
 	"github.com/urfave/cli"
+	"leistungsnachweis-graphiker/solver"
 )
 
 func main() {
@@ -60,5 +60,6 @@ func startWeb(c *cli.Context) {
 func startCli(c *cli.Context) {
 	algorithm := c.String("algorithm")
 	problem := c.String("problem")
-	solver.NewCli(algorithm, problem)
+	cliController := solver.NewCli(algorithm, problem)
+	cliController.WaitUntilFinished()
 }

@@ -2,10 +2,11 @@ package solver
 
 import (
 	"log"
+	"time"
 
-	"github.com/ob-algdatii-ss19/leistungsnachweis-graphiker/algorithm"
-	"github.com/ob-algdatii-ss19/leistungsnachweis-graphiker/problem"
-	"github.com/ob-algdatii-ss19/leistungsnachweis-graphiker/session"
+	"leistungsnachweis-graphiker/algorithm"
+	"leistungsnachweis-graphiker/problem"
+	"leistungsnachweis-graphiker/session"
 )
 
 type CliController struct {
@@ -27,7 +28,17 @@ func NewCli(algorithmName, problemPath string) CliController {
 
 	sess := session.NewSession(1, &alg, &prob)
 	sess.Start()
-	sess.Wait()
 
 	return CliController{session: sess}
+}
+
+func (cli *CliController) WaitUntilFinished() {
+	for {
+		if cli.session.State() != session.Finished ||
+			cli.session.State() != session.StoppedByUser {
+			time.Sleep(1 * time.Second)
+		} else {
+			break
+		}
+	}
 }

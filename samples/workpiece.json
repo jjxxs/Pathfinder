@@ -2,7 +2,7 @@
     "info": {
         "name": "Workpiece",
         "description": "Technical drawing of a flat workpiece with prisms",
-        "type": "cartesian"
+        "type": "euclidean"
     },
     "points": [
         {"x": 230, "y": 138},
