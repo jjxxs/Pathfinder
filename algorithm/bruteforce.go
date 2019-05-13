@@ -2,6 +2,7 @@ package algorithm
 
 import (
 	"log"
+	"math"
 	"time"
 
 	"leistungsnachweis-graphiker/problem"
@@ -10,21 +11,54 @@ import (
 type BruteForce struct {
 	shortestDistance float32
 	shortestCycle    []int
-	calculations     int64
+	calculations     uint64
+	running          bool
 }
 
-func (b BruteForce) String() string {
-	return "Bruteforce"
+func NewBruteForce() *BruteForce {
+	return &BruteForce{
+		shortestDistance: math.MaxFloat32,
+	}
 }
 
+func (b *BruteForce) Stop() {
+	b.running = false
+}
+
+//  64.099.164
+// 132.215.492
 func (b *BruteForce) Solve(adjacency [][]float32, cycles chan problem.Cycles) {
+	// set state to running
+	b.running = true
 	log.Printf("solving problemset with %d entries using bruteforce", len(adjacency))
 
-	// slice to permutate
+	// start worker for statistics
+	go b.worker()
+
+	// slice to permute
 	points := make([]int, len(adjacency))
 	for i := range points {
 		points[i] = i
 	}
+
+	// calculate distance for the first permutation
+	var distance float32
+	for i := range points {
+		if i == len(points)-1 {
+			distance += adjacency[points[i]][points[0]]
+		} else {
+			distance += adjacency[points[i]][points[i+1]]
+		}
+	}
+
+	// found new shortest cycle, set properties
+	shortestCycle := make([]int, len(points))
+	copy(shortestCycle, points)
+	b.shortestDistance = distance
+	b.shortestCycle = shortestCycle
+
+	// forward result to session
+	cycles <- []problem.Cycle{problem.Cycle(shortestCycle)}
 
 	// heap's algorithm
 	c := make([]int, len(adjacency))
@@ -32,51 +66,92 @@ func (b *BruteForce) Solve(adjacency [][]float32, cycles chan problem.Cycles) {
 		c[i] = 0
 	}
 
-	go b.worker()
+	pointLength := len(points)
+	cLength := len(c)
 
 	i := 0
-	for i < len(c) {
+	for i < cLength && b.running {
 		if c[i] < i {
-			if i%2 == 0 {
-				points[0], points[i] = points[i], points[0]
-			} else {
-				points[c[i]], points[i] = points[i], points[c[i]]
+
+			// which point to swap with
+			j := 0
+			if i%2 != 0 {
+				j = c[i]
 			}
 
-			// new permutation, calculate distance
-			distance := float32(0)
-			for i := range points {
-				if i == len(points)-1 {
-					distance += adjacency[points[i]][points[0]]
-				} else {
-					distance += adjacency[points[i]][points[i+1]]
-				}
+			// indices
+			jLeft := j - 1
+			if jLeft < 0 {
+				jLeft = pointLength - 1
 			}
+			jRight := j + 1
+			if jRight == pointLength {
+				jRight = 0
+			}
+			iLeft := i - 1
+			if iLeft < 0 {
+				iLeft = pointLength - 1
+			}
+			iRight := i + 1
+			if iRight == pointLength {
+				iRight = 0
+			}
+
+			// by only re-calculating the distances of the swapped points instead of the whole route,
+			// we increase performance by a factor of two. performance increase on a intel core i7-8700k is
+			// up from 64.000.000 to 132.000.000 iterations per second
+
+			// subtract distances
+			distance -= adjacency[points[j]][points[jLeft]] +
+				adjacency[points[j]][points[jRight]] +
+				adjacency[points[i]][points[iLeft]] +
+				adjacency[points[i]][points[iRight]]
+
+			// swap i with j
+			points[j], points[i] = points[i], points[j]
+
+			// add distances
+			distance += adjacency[points[j]][points[jLeft]] +
+				adjacency[points[j]][points[jRight]] +
+				adjacency[points[i]][points[iLeft]] +
+				adjacency[points[i]][points[iRight]]
 
 			if distance < b.shortestDistance {
+				// found new shortest cycle, set properties
+				shortestCycle := make([]int, len(points))
+				copy(shortestCycle, points)
 				b.shortestDistance = distance
-				//shortestCycle := make([]int, len(points))
-				//copy(points, shortestCycle)
-				//b.shortestCycle = shortestCycle
-				log.Printf("bruteforce found new shortest cycle: %f", distance)
+				b.shortestCycle = shortestCycle
+
+				// forward result to session
+				cycles <- []problem.Cycle{problem.Cycle(shortestCycle)}
 			}
 
 			b.calculations++
-
 			c[i] += 1
 			i = 0
-
 		} else {
 			c[i] = 0
 			i++
 		}
 	}
+
+	// finished, close the channel and set state
+	close(cycles)
+	b.running = false
 }
 
 func (b *BruteForce) worker() {
-	for {
-		time.Sleep(1 * time.Second)
-		log.Printf("calculations per second: %d", b.calculations)
-		b.calculations = 0
+	startTime := time.Now()
+	ticker := time.NewTicker(time.Second)
+	defer ticker.Stop()
+	for b.running {
+		<-ticker.C
+		cps := float64(b.calculations) / time.Since(startTime).Seconds()
+		log.Printf("calculations per second: %d", int64(cps))
 	}
+}
+
+func (b BruteForce) String() string {
+	return "Bruteforce"
 }
