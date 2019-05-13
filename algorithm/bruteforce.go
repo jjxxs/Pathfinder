@@ -9,15 +9,15 @@ import (
 )
 
 type BruteForce struct {
-	shortestDistance float32
-	shortestCycle    []int
-	calculations     uint64
+	ShortestDistance float32 `json:"shortestDistance"`
+	ShortestCycle    []int   `json:"shortestCycle"`
+	Calculations     uint64  `json:"calculations"`
 	running          bool
 }
 
 func NewBruteForce() *BruteForce {
 	return &BruteForce{
-		shortestDistance: math.MaxFloat32,
+		ShortestDistance: math.MaxFloat32,
 	}
 }
 
@@ -54,8 +54,8 @@ func (b *BruteForce) Solve(adjacency [][]float32, cycles chan problem.Cycles) {
 	// found new shortest cycle, set properties
 	shortestCycle := make([]int, len(points))
 	copy(shortestCycle, points)
-	b.shortestDistance = distance
-	b.shortestCycle = shortestCycle
+	b.ShortestDistance = distance
+	b.ShortestCycle = shortestCycle
 
 	// forward result to session
 	cycles <- []problem.Cycle{problem.Cycle(shortestCycle)}
@@ -116,18 +116,16 @@ func (b *BruteForce) Solve(adjacency [][]float32, cycles chan problem.Cycles) {
 				adjacency[points[i]][points[iLeft]] +
 				adjacency[points[i]][points[iRight]]
 
-			if distance < b.shortestDistance {
-				// found new shortest cycle, set properties
+			if distance < b.ShortestDistance {
+				// found new shortest cycle, set properties and forward the result
 				shortestCycle := make([]int, len(points))
 				copy(shortestCycle, points)
-				b.shortestDistance = distance
-				b.shortestCycle = shortestCycle
-
-				// forward result to session
+				b.ShortestDistance = distance
+				b.ShortestCycle = shortestCycle
 				cycles <- []problem.Cycle{problem.Cycle(shortestCycle)}
 			}
 
-			b.calculations++
+			b.Calculations++
 			c[i] += 1
 			i = 0
 		} else {
@@ -147,8 +145,8 @@ func (b *BruteForce) worker() {
 	defer ticker.Stop()
 	for b.running {
 		<-ticker.C
-		cps := float64(b.calculations) / time.Since(startTime).Seconds()
-		log.Printf("calculations per second: %d", int64(cps))
+		cps := float64(b.Calculations) / time.Since(startTime).Seconds()
+		log.Printf("Calculations per second: %d", int64(cps))
 	}
 }
 

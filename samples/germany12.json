@@ -1,7 +1,7 @@
 {
     "info": {
-        "name": "Germany",
-        "description": "Ten biggest german cities",
+        "name": "Germany 13",
+        "description": "The thirteen biggest german cities by population",
         "type": "geographic"
     },
     "points": [
@@ -14,6 +14,9 @@
         {"x": 6.47, "y": 51.14, "name": "Düsseldorf"},
         {"x": 7.28, "y": 51.31, "name": "Dortmund"},
         {"x": 7.1, "y": 51.27, "name": "Essen"},
-        {"x": 12.23, "y": 51.2, "name": "Leipzig"}
+        {"x": 12.23, "y": 51.2, "name": "Leipzig"},
+        {"x": 8.48, "y": 53.5, "name": "Bremen"},
+        {"x": 13.44, "y": 51.2, "name": "Dresden"},
+        {"x": 9.43, "y": 52.22, "name": "Hanover"}
     ]
 }

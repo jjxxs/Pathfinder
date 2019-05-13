@@ -1,12 +1,8 @@
 package solver
 
 import (
-	"log"
-	"time"
-
-	"leistungsnachweis-graphiker/algorithm"
-	"leistungsnachweis-graphiker/problem"
 	"leistungsnachweis-graphiker/session"
+	"log"
 )
 
 type CliController struct {
@@ -16,29 +12,28 @@ type CliController struct {
 func NewCli(algorithmName, problemPath string) CliController {
 	log.Printf("running as cli")
 
-	alg, err := algorithm.FromString(algorithmName)
+	// try to create the session, subscribe to and start it
+	sess, err := session.NewSession(1, algorithmName, problemPath)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	prob, err := problem.FromFile(problemPath)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	sess := session.NewSession(1, &alg, &prob)
+	updates := sess.Subscribe()
 	sess.Start()
 
-	return CliController{session: sess}
-}
-
-func (cli *CliController) WaitUntilFinished() {
+	// listen for updates
+	//lastRoutes := problem.Routes{}
 	for {
-		if cli.session.State() != session.Finished ||
-			cli.session.State() != session.StoppedByUser {
-			time.Sleep(1 * time.Second)
-		} else {
+		routes, more := <-updates
+		if len(routes) > 0 {
+			log.Printf("received update:\n%s", routes)
+			//lastRoutes = routes
+		}
+		if !more {
 			break
 		}
 	}
+
+	//log.Printf("solved problem '%s', shortest route is %d\n%s", prob, 300, lastRoutes)
+
+	return CliController{session: sess}
 }

@@ -10,16 +10,71 @@ import (
 	"strings"
 )
 
+// a cycle is a set of integers/point-ids that are to be mapped to points
+// this way they represent a light-weight representation of a route that is
+// more performant to deal with
+type Cycle []int
+type Cycles []Cycle
+
+// a route is a set of points in a specific order
+// they are the high-level representation of a cycle that was produced by an algorithm
+type Route []Point
+type Routes []Route
+
+func (r Route) String() string {
+	routeStr := ""
+	for i, p := range r {
+		if i == len(r)-1 {
+			routeStr += p.Name
+		} else {
+			routeStr += p.Name + " <-> "
+		}
+	}
+	return routeStr
+}
+
+func (r Routes) String() string {
+	routesStr := ""
+	for i, route := range r {
+		if i == len(r)-1 {
+			routesStr += route.String()
+		} else {
+			routesStr += route.String() + " :: "
+		}
+	}
+	return routesStr
+}
+
+// contains the distances between each point on a route
+type Adjacency [][]float32
+
+// contains information about a problem
+type Info struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+
+	// either 'geographic' or 'euclidean'
+	// determines how distance between two points is calculated
+	Type string `json:"type"`
+}
+
+type Point struct {
+	X    float32 `json:"x"`
+	Y    float32 `json:"y"`
+	Name string  `json:"name"`
+}
+
 // represents a 'tsp-problem' that is to be solved by the solver
 type Problem struct {
-	// info about the problemset
+	// info about the problem
 	Info Info `json:"Info"`
 
-	// set of points on the route
-	Points []Point `json:"points"`
+	// route of the problem, e.g. a set of points that the solver has to bring into the right order
+	// for it to be the shortest route possible
+	Route Route `json:"points"`
 
 	// adjacency matrix, e.g. distances between the points
-	Adjacency [][]float32 `json:"adjacency"`
+	Adjacency Adjacency `json:"adjacency"`
 }
 
 // loads a set of problems from a directory
@@ -98,29 +153,48 @@ func FromFile(file string) (Problem, error) {
 }
 
 // creates a new problem from given points and info
-func NewProblem(points []Point, info Info) *Problem {
-	p := Problem{Points: points, Info: info}
+func NewProblem(route Route, info Info) *Problem {
+	p := Problem{Route: route, Info: info}
 	p.calculateAdjacency()
 	return &p
 }
 
-// contains information about a problem
-type Info struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	Type        string `json:"type"` // either 'geographic' or 'euclidean'
+// converts given cycles to routes
+func (p *Problem) GetRoutesFromCycles(cycles Cycles) Routes {
+	routes := make(Routes, len(cycles))
+
+	for i, cycle := range cycles {
+		ps := make(Route, 0)
+		for _, id := range cycle {
+			ps = append(ps, p.Route[id])
+		}
+		routes[i] = ps
+	}
+
+	return routes
 }
 
-type Point struct {
-	X    float32 `json:"x"`
-	Y    float32 `json:"y"`
-	Name string  `json:"name"`
+func (p *Problem) GetDistancesFromCycles(cycles Cycles) []float32 {
+	distances := make([]float32, len(cycles))
+	for j, cycle := range cycles {
+
+		var distance float32
+		for k, i := range cycle {
+			if k == len(cycle)-1 {
+				distance += p.Adjacency[i][0]
+			} else {
+				distance += p.Adjacency[i][i+1]
+			}
+		}
+
+		distances[j] = distance
+	}
+
+	return distances
 }
 
-type Cycle []Point
-type Cycles []Cycle
-
-func (p *Problem) String() string {
+// name of the problem
+func (p Problem) String() string {
 	return p.Info.Name
 }
 
@@ -140,11 +214,11 @@ func (p *Problem) calculateAdjacency() {
 	}
 
 	// allocate adjacency and calculate distances
-	p.Adjacency = make([][]float32, len(p.Points))
-	for i, rowPoint := range p.Points {
+	p.Adjacency = make(Adjacency, len(p.Route))
+	for i, rowPoint := range p.Route {
 
-		adjRow := make([]float32, len(p.Points))
-		for j, colPoint := range p.Points {
+		adjRow := make([]float32, len(p.Route))
+		for j, colPoint := range p.Route {
 			adjRow[j] = calcDistance(rowPoint, colPoint)
 		}
 

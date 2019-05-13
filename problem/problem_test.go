@@ -7,7 +7,7 @@ import (
 
 const (
 	TestProblemDir           = "../samples/"
-	TestProblemFileGermany   = "../samples/germany10.json"
+	TestProblemFileGermany   = "../samples/germany12.json"
 	TestProblemFileWorkpiece = "../samples/workpiece.json"
 )
 
@@ -31,14 +31,14 @@ func TestProblemFileLoadGermany(t *testing.T) {
 	}
 
 	// test Info
-	if problem.Info.Name != "Germany" ||
-		problem.Info.Description != "Ten biggest german cities" ||
+	if problem.Info.Name != "Germany 13" ||
+		problem.Info.Description != "The thirteen biggest german cities by population" ||
 		problem.Info.Type != "geographic" {
 		t.Fatalf("failed to load problem Info")
 	}
 
 	// test points length
-	if len(problem.Points) != 10 {
+	if len(problem.Route) != 13 {
 		t.Fatalf("failed to load problem-points, invalid length")
 	}
 
@@ -54,9 +54,12 @@ func TestProblemFileLoadGermany(t *testing.T) {
 		{X: 7.28, Y: 51.31, Name: "Dortmund"},
 		{X: 7.1, Y: 51.27, Name: "Essen"},
 		{X: 12.23, Y: 51.2, Name: "Leipzig"},
+		{X: 8.48, Y: 53.5, Name: "Bremen"},
+		{X: 13.44, Y: 51.2, Name: "Dresden"},
+		{X: 9.43, Y: 52.22, Name: "Hanover"},
 	}
 
-	for i, actualPoint := range problem.Points {
+	for i, actualPoint := range problem.Route {
 		expectedPoint := expectedPoints[i]
 		if expectedPoint.X != actualPoint.X ||
 			expectedPoint.Y != actualPoint.Y ||
@@ -81,7 +84,7 @@ func TestProblemFileLoadWerkstueck(t *testing.T) {
 	}
 
 	// test points length
-	if len(problem.Points) != 30 {
+	if len(problem.Route) != 30 {
 		t.Fatalf("failed to load problem-points, invalid length")
 	}
 
@@ -119,7 +122,7 @@ func TestProblemFileLoadWerkstueck(t *testing.T) {
 		{X: 494, Y: 273},
 	}
 
-	for i, actualPoint := range problem.Points {
+	for i, actualPoint := range problem.Route {
 		expectedPoint := expectedPoints[i]
 		if expectedPoint.X != actualPoint.X ||
 			expectedPoint.Y != actualPoint.Y ||
