@@ -73,7 +73,7 @@ type Session struct {
 	stopTime  time.Time
 }
 
-// metrics about the session used for serialization, e.g. to pass it to a web-frontend
+// metrics about the session used for serialization, e.g. to pass it to a webui-frontend
 type Metrics struct {
 	SessionId int       `json:"sessionId"`
 	State     State     `json:"state"`
@@ -103,6 +103,7 @@ func NewSession(sessionId int, algorithmName, problemPath string) (Session, erro
 		mutex:       &sync.Mutex{},
 		algorithm:   alg,
 		problem:     prob,
+		state:       Initialized,
 		cycles:      make(chan problem.Cycles, 10),
 		subscribers: make(map[chan problem.Routes]bool),
 		startTime:   theTime,
