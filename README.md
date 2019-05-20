@@ -90,3 +90,7 @@ Output will look like:
 2019/05/20 01:57:57 finished execution of session{sessionId: 1, algorithm: 'Bruteforce', problem: 'Germany 13', state: Finished, runtime: 50.555430822s}
 2019/05/20 01:57:57 { Hamburg <-> Berlin <-> Dresden <-> Leipzig <-> Munich <-> Stuttgart <-> Frankfurt <-> Cologne <-> Düsseldorf <-> Essen <-> Dortmund <-> Bremen <-> Hanover }
 ```
+
+## ToDo:
+- Connect frontend to backend
+- Implement missing algorithms
