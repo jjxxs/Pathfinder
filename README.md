@@ -68,7 +68,8 @@ Pathfinder comes with a simple to use webinterface.
 - ```--address``` to listen for incoming connections
 
 Communication between the solver and the webapp is done using a websocket, enabling for bi-directional 
-real-time communication.
+real-time communication. The webapp is done using [typescript](https://www.typescriptlang.org/) and [reactjs](https://reactjs.org/).
+
 ![WebUI](https://hobbystudent.de/img/pathfinder_s.png "WebUI")
 
 ## CLI
