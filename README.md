@@ -62,7 +62,7 @@ Pathfinder includes the following algorithms:
 - Held-Karp (dynamic programming)
 - Branch-and-Bound
 
-### WebUI
+## WebUI
 Pathfinder comes with a simple to use webinterface. 
 - ```--problems``` specify the folder that contains the problem-sets
 - ```--address``` to listen for incoming connections
@@ -71,7 +71,7 @@ Communication between the solver and the webapp is done using a websocket, enabl
 real-time communication.
 ![WebUI](https://hobbystudent.de/img/pathfinder_s.png "WebUI")
 
-### CLI
+## CLI
 Pathfinder can be run from the command-line as well.
 - ```--problem``` specify the file that contains the problem
 - ```--algorithm``` specify the algorithm to use
