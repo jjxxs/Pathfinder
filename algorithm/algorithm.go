@@ -9,7 +9,7 @@ import (
 
 type Algorithm interface {
 	String() string
-	Solve(adjacency [][]float32, cycles chan problem.Cycles)
+	Solve(adjacency problem.Adjacency, cycles chan problem.Cycles)
 	Stop()
 }
 
