@@ -6,8 +6,9 @@ import (
 	"sort"
 )
 
-// Returns a list of all primes in [2, upperBound]
-// uses sieve of atkins algorithm
+// uses the sieve of atkins to generate
+// a list of all primes in [2, upperBound]
+// returns the primes in ascending order
 func GetPrimesTo(upperBound int) []int {
 	sieve := make([]bool, upperBound)
 
@@ -48,12 +49,15 @@ func GetPrimesTo(upperBound int) []int {
 	return primes
 }
 
+// A set
 type Set []int
-type PowerSet [][]int
 
-func GetPowerSet(S Set) PowerSet {
+// generates all 2^n possible subsets of the specified set
+// returns them in order, ascending by length and
+// and ascending by elements
+func PowerSet(S Set) []Set {
 	cardinality := uint(math.Pow(2, float64(len(S))))
-	results := make(PowerSet, cardinality)
+	results := make([]Set, cardinality)
 
 	for i := uint(0); i < cardinality; i++ {
 
@@ -80,8 +84,10 @@ func GetPowerSet(S Set) PowerSet {
 				return results[i][k] < results[j][k]
 			}
 		}
+
 		return len(results[i]) < len(results[j])
 	}
+
 	sort.Slice(results, compareByLengthOrElements)
 
 	return results

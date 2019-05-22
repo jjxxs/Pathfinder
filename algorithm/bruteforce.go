@@ -21,19 +21,19 @@ func NewBruteForce() *BruteForce {
 	}
 }
 
-func (b *BruteForce) Stop() {
-	b.running = false
+func (a *BruteForce) Stop() {
+	a.running = false
 }
 
 //  64.099.164
 // 132.215.492
-func (b *BruteForce) Solve(adjacency [][]float32, cycles chan problem.Cycles) {
+func (a *BruteForce) Solve(adjacency problem.Adjacency, cycles chan problem.Cycles) {
 	// set state to running
-	b.running = true
+	a.running = true
 	log.Printf("solving problemset with %d entries using bruteforce", len(adjacency))
 
 	// start worker for statistics
-	go b.worker()
+	go a.worker()
 
 	// slice to permute
 	points := make([]int, len(adjacency))
@@ -54,8 +54,8 @@ func (b *BruteForce) Solve(adjacency [][]float32, cycles chan problem.Cycles) {
 	// found new shortest cycle, set properties
 	shortestCycle := make([]int, len(points))
 	copy(shortestCycle, points)
-	b.ShortestDistance = distance
-	b.ShortestCycle = shortestCycle
+	a.ShortestDistance = distance
+	a.ShortestCycle = shortestCycle
 
 	// forward result to session
 	cycles <- []problem.Cycle{problem.Cycle(shortestCycle)}
@@ -70,7 +70,7 @@ func (b *BruteForce) Solve(adjacency [][]float32, cycles chan problem.Cycles) {
 	cLength := len(c)
 
 	i := 0
-	for i < cLength && b.running {
+	for i < cLength && a.running {
 		if c[i] < i {
 
 			// which point to swap with
@@ -116,16 +116,16 @@ func (b *BruteForce) Solve(adjacency [][]float32, cycles chan problem.Cycles) {
 				adjacency[points[i]][points[iLeft]] +
 				adjacency[points[i]][points[iRight]]
 
-			if distance < b.ShortestDistance {
+			if distance < a.ShortestDistance {
 				// found new shortest cycle, set properties and forward the result
 				shortestCycle := make([]int, len(points))
 				copy(shortestCycle, points)
-				b.ShortestDistance = distance
-				b.ShortestCycle = shortestCycle
+				a.ShortestDistance = distance
+				a.ShortestCycle = shortestCycle
 				cycles <- []problem.Cycle{problem.Cycle(shortestCycle)}
 			}
 
-			b.Calculations++
+			a.Calculations++
 			c[i] += 1
 			i = 0
 		} else {
@@ -136,20 +136,20 @@ func (b *BruteForce) Solve(adjacency [][]float32, cycles chan problem.Cycles) {
 
 	// finished, close the channel and set state
 	close(cycles)
-	b.running = false
+	a.running = false
 }
 
-func (b *BruteForce) worker() {
+func (a *BruteForce) worker() {
 	startTime := time.Now()
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
-	for b.running {
+	for a.running {
 		<-ticker.C
-		cps := float64(b.Calculations) / time.Since(startTime).Seconds()
+		cps := float64(a.Calculations) / time.Since(startTime).Seconds()
 		log.Printf("Calculations per second: %d", int64(cps))
 	}
 }
 
-func (b BruteForce) String() string {
+func (a BruteForce) String() string {
 	return "Bruteforce"
 }
