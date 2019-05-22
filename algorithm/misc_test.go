@@ -1,6 +1,9 @@
 package algorithm
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+)
 
 func TestGetPrimesTo(t *testing.T) {
 	// generate primes in [2, 1000]
@@ -35,4 +38,29 @@ func TestGetPrimesTo(t *testing.T) {
 
 func BenchmarkGetPrimesTo(b *testing.B) {
 	GetPrimesTo(b.N)
+}
+
+func TestPowerSet(t *testing.T) {
+	set := Set{1, 2, 3, 4}
+	isSet := PowerSet(set)
+
+	shouldSet := []Set{
+		{},
+		{1}, {2}, {3}, {4},
+		{1, 2}, {1, 3}, {1, 4}, {2, 3}, {2, 4}, {3, 4},
+		{1, 2, 3}, {1, 2, 4}, {1, 3, 4}, {2, 3, 4},
+		{1, 2, 3, 4},
+	}
+
+	if len(isSet) != len(shouldSet) {
+		t.Fatalf("sets have differen lengths")
+	}
+
+	for i := range isSet {
+		eq := reflect.DeepEqual(isSet[i], shouldSet[i])
+
+		if !eq {
+			t.Fatalf("sets are not equal")
+		}
+	}
 }
