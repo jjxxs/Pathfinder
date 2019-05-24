@@ -3,12 +3,12 @@ package algorithm
 import (
 	"fmt"
 	"leistungsnachweis-graphiker/problem"
+	"log"
 	"math"
 )
 
 type HeldKarp struct {
-	primes   []int
-	powerSet PowerSet
+	primes []int
 }
 
 func NewHeldKarp() *HeldKarp {
@@ -24,9 +24,6 @@ func (a *HeldKarp) Solve(adjacency problem.Adjacency, cycles chan problem.Cycles
 	for i := range set {
 		set[i] = i
 	}
-
-	// power set
-	a.powerSet = GetPowerSet(set)
 
 	// prime table for hashing the sets
 	a.primes = GetPrimesTo(len(set) * 100)
@@ -46,59 +43,100 @@ func (a *HeldKarp) Solve(adjacency problem.Adjacency, cycles chan problem.Cycles
 	}
 
 	// for every subset of S\{0}
-	for _, A := range GetPowerSet(set[1:]) {
+	for _, subset := range PowerSet(set[1:]) {
 
-		if len(A) == 0 {
+		if len(subset) == 0 {
 			continue
 		}
 
-		// for every i, find the shortest distance that goes from i through A to 0
-		// e.g. choose a j from A that connects to i so that distance is minimal
+		// for every i, find the shortest distance that goes from i through subset to 0
+		// e.g. choose a j from subset that connects to i so that distance is minimal
+	NextElement:
 		for _, i := range set {
 
-			// if i is element of A, cancel
-			elementOfA := false
-			for _, j := range A {
+			// if i is element of subset, cancel
+			for _, j := range subset {
 				if i == j {
-					elementOfA = true
-					break
+					continue NextElement
 				}
 			}
 
-			if elementOfA {
-				continue
-			}
+			hash := a.getHash(subset)
 
-			hash := a.getHash(A)
-
-			// otherwise try for every j in A the route from i to j through A so that the distance is minimal
+			//  try for every j in subset the route from i to j through subset so that the distance is minimal
 			minDistance := float32(math.MaxFloat32)
-			min_j := 0
-			for _, j := range A {
-				A_j := make([]int, len(A)-1)
+			minJ := 0
+			for _, j := range subset {
+
+				// subset\{j}
+				subsetNoJ := make([]int, len(subset)-1)
 				index := 0
-				for _, p := range A {
+				for _, p := range subset {
 					if p == j {
 						continue
 					}
-					A_j[index] = p
+					subsetNoJ[index] = p
 					index++
 				}
+				h := a.getHash(subsetNoJ)
 
-				aJHash := a.getHash(A_j)
-				dist := adjacency[i][j] + table[j][aJHash] // A \ {j}
+				dist := adjacency[i][j] + table[j][h]
 				if dist < minDistance {
 					minDistance = dist
-					min_j = j
+					minJ = j
 				}
 			}
 
 			table[i][hash] = minDistance
-			backtracking[i][hash] = min_j
+			backtracking[i][hash] = minJ
 		}
 	}
 
 	// backtracking
+	backtrackingSet := make(Set, len(set)-1)
+	for i := range backtrackingSet {
+		backtrackingSet[i] = i + 1
+	}
+
+	cycle := make(problem.Cycle, len(set))
+	last := 0
+	for i := range set {
+		h := a.getHash(backtrackingSet)
+		cycle[i] = backtracking[last][h]
+		last = cycle[i]
+
+		tmpSet := make(Set, len(backtrackingSet)-1)
+
+		if len(tmpSet) == 0 {
+			break
+		}
+
+		index := 0
+		for j := range backtrackingSet {
+			if backtrackingSet[j] == cycle[i] {
+				continue
+			}
+			tmpSet[index] = backtrackingSet[j]
+			index++
+		}
+		backtrackingSet = tmpSet
+	}
+
+	for _, c := range cycle {
+		log.Printf("%d -> ", c)
+	}
+
+	totalDistance := float32(0.0)
+	for i := range cycle {
+		if i == len(cycle)-1 {
+			totalDistance += adjacency[cycle[i]][0]
+		} else {
+			totalDistance += adjacency[cycle[i]][cycle[i+1]]
+		}
+	}
+
+	log.Printf("distance: %f", totalDistance)
+
 	s1 := backtracking[0][a.getHash(Set{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12})]
 	s2 := backtracking[1][a.getHash(Set{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12})]
 	s3 := backtracking[12][a.getHash(Set{2, 3, 4, 5, 6, 7, 8, 9, 10, 11})]
