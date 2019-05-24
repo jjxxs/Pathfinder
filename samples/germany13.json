@@ -7,8 +7,8 @@
     "points": [
         {"x": 13.23, "y": 52.31, "name": "Berlin"},
         {"x": 10.0, "y": 53.33, "name": "Hamburg"},
-        {"x": 11.34, "y": 48.8, "name": "Munich"},
-        {"x": 6.57, "y": 50.56, "name": "Cologne"},
+        {"x": 11.34, "y": 48.8, "name": "München"},
+        {"x": 6.57, "y": 50.56, "name": "Köln"},
         {"x": 8.41, "y": 50.7, "name": "Frankfurt"},
         {"x": 9.11, "y": 48.47, "name": "Stuttgart"},
         {"x": 6.47, "y": 51.14, "name": "Düsseldorf"},
@@ -17,6 +17,6 @@
         {"x": 12.23, "y": 51.2, "name": "Leipzig"},
         {"x": 8.48, "y": 53.5, "name": "Bremen"},
         {"x": 13.44, "y": 51.2, "name": "Dresden"},
-        {"x": 9.43, "y": 52.22, "name": "Hanover"}
+        {"x": 9.43, "y": 52.22, "name": "Hannover"}
     ]
 }
