@@ -7,7 +7,7 @@ import (
 
 const (
 	TestProblemDir           = "../samples/"
-	TestProblemFileGermany   = "../samples/germany12.json"
+	TestProblemFileGermany   = "../samples/germany13.json"
 	TestProblemFileWorkpiece = "../samples/workpiece.json"
 )
 
