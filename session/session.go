@@ -149,7 +149,9 @@ func (s *Session) Stop() {
 			close(sub)
 			delete(s.subscribers, sub)
 		}
-		log.Printf("finished execution of %v", s)
+		_, shortestDistance, shortestCycle := s.algorithm.GetSolution()
+		shortestRoute := s.problem.GetRoutesFromCycles(problem.Cycles{shortestCycle})
+		log.Printf("finished execution of %v\n\troute: %v\n\tdistance: %f", s, shortestRoute, shortestDistance)
 	}
 }
 
@@ -193,7 +195,7 @@ func (s *Session) worker() {
 					break
 				}
 
-				// if the algorithm closed the channel, this means it finished execution
+				// if the algorithm closed the channel, it means execution finished
 				if !more {
 					s.state = Finished
 					s.Stop()

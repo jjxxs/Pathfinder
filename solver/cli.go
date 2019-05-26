@@ -21,19 +21,16 @@ func NewCli(algorithmName, problemPath string) CliController {
 	sess.Start()
 
 	// listen for updates
-	//lastRoutes := problem.Routes{}
 	for {
 		routes, more := <-updates
 		if len(routes) > 0 {
-			log.Printf("received update:\n%s", routes)
-			//lastRoutes = routes
+			// receive updates here
+			//log.Printf("received update:\n%s", routes)
 		}
 		if !more {
 			break
 		}
 	}
-
-	//log.Printf("solved problem '%s', shortest route is %d\n%s", prob, 300, lastRoutes)
 
 	return CliController{session: sess}
 }
