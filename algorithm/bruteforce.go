@@ -1,6 +1,7 @@
 package algorithm
 
 import (
+	"errors"
 	"log"
 	"math"
 	"time"
@@ -9,7 +10,7 @@ import (
 )
 
 type BruteForce struct {
-	ShortestDistance float32 `json:"shortestDistance"`
+	ShortestDistance float64 `json:"shortestDistance"`
 	ShortestCycle    []int   `json:"shortestCycle"`
 	Calculations     uint64  `json:"calculations"`
 	running          bool
@@ -17,7 +18,7 @@ type BruteForce struct {
 
 func NewBruteForce() *BruteForce {
 	return &BruteForce{
-		ShortestDistance: math.MaxFloat32,
+		ShortestDistance: math.MaxFloat64,
 	}
 }
 
@@ -42,7 +43,7 @@ func (a *BruteForce) Solve(adjacency problem.Adjacency, cycles chan problem.Cycl
 	}
 
 	// calculate distance for the first permutation
-	var distance float32
+	var distance float64
 	for i := range points {
 		if i == len(points)-1 {
 			distance += adjacency[points[i]][points[0]]
@@ -137,6 +138,18 @@ func (a *BruteForce) Solve(adjacency problem.Adjacency, cycles chan problem.Cycl
 	// finished, close the channel and set state
 	close(cycles)
 	a.running = false
+}
+
+func (a *BruteForce) GetSolution() (error, float64, problem.Cycle) {
+	if a.running {
+		return errors.New("still running"), 0, nil
+	}
+
+	if !a.running && a.ShortestDistance == math.MaxFloat64 {
+		return errors.New("not solved"), 0, nil
+	}
+
+	return nil, a.ShortestDistance, a.ShortestCycle
 }
 
 func (a *BruteForce) worker() {

@@ -11,6 +11,7 @@ type Algorithm interface {
 	String() string
 	Solve(adjacency problem.Adjacency, cycles chan problem.Cycles)
 	Stop()
+	GetSolution() (error, float64, problem.Cycle)
 }
 
 func FromString(algorithmName string) (Algorithm, error) {
