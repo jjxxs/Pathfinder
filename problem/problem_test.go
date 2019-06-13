@@ -144,7 +144,8 @@ func TestProblemFromPointsCartesian(t *testing.T) {
 		Type: "euclidean",
 	}
 
-	cartesianProblem := NewProblem(points, info)
+	cartesianProblem := Problem{Route: points}
+	//cartesianProblem := NewProblem(points, info)
 
 	expectedAdj := [][]float32{
 		{0, 3.3872256, 3.9865038, 6.88608},

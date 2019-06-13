@@ -10,16 +10,14 @@ import (
 	"strings"
 )
 
-// a cycle is a set of integers/point-ids that are to be mapped to points
-// this way they represent a light-weight representation of a route that is
-// more performant to deal with
-type Cycle []int
-type Cycles []Cycle
+// contains the distances between each point on a route
+type Adjacency [][]float64
 
-// a route is a set of points in a specific order
-// they are the high-level representation of a cycle that was produced by an algorithm
+// a cycle is a set of integers that are to be mapped to points
+type Cycle []int
+
+// a route is a set of points in a specific order, it is a high-level representation of a cycle
 type Route []Point
-type Routes []Route
 
 func (r Route) String() string {
 	routeStr := ""
@@ -33,20 +31,25 @@ func (r Route) String() string {
 	return routeStr
 }
 
-func (r Routes) String() string {
-	routesStr := ""
-	for i, route := range r {
-		if i == len(r)-1 {
-			routesStr += route.String()
-		} else {
-			routesStr += route.String() + " :: "
-		}
-	}
-	return routesStr
-}
+// represents a 'tsp-problem' that is to be solved by the solver
+type Problem struct {
+	// info about the problem
+	Info Info `json:"info"`
 
-// contains the distances between each point on a route
-type Adjacency [][]float64
+	// path to the image of the problem, if any
+	Image Image `json:"image"`
+
+	// route of the problem, e.g. a set of points that the solver has to bring into the right order
+	// for it to be the shortest route possible
+	Points []Point `json:"points"`
+
+	ShortestRoute Route `json:"route"`
+
+	ShortestDistance float64 `json:"shortestDistance"`
+
+	// adjacency matrix, e.g. distances between the points
+	Adjacency Adjacency `json:"adjacency"`
+}
 
 // contains information about a problem
 type Info struct {
@@ -58,23 +61,21 @@ type Info struct {
 	Type string `json:"type"`
 }
 
-type Point struct {
-	X    float32 `json:"x"`
-	Y    float32 `json:"y"`
-	Name string  `json:"name"`
+type Image struct {
+	Path   string  `json:"path"`
+	X1     float64 `json:"x1"`
+	Y1     float64 `json:"y1"`
+	X2     float64 `json:"x2"`
+	Y2     float64 `json:"y2"`
+	Width  int     `json:"width"`
+	Height int     `json:"height"`
 }
 
-// represents a 'tsp-problem' that is to be solved by the solver
-type Problem struct {
-	// info about the problem
-	Info Info `json:"Info"`
-
-	// route of the problem, e.g. a set of points that the solver has to bring into the right order
-	// for it to be the shortest route possible
-	Route Route `json:"points"`
-
-	// adjacency matrix, e.g. distances between the points
-	Adjacency Adjacency `json:"adjacency"`
+// a point in two-dimensional space
+type Point struct {
+	X    float64 `json:"x"`
+	Y    float64 `json:"y"`
+	Name string  `json:"name"`
 }
 
 // loads a set of problems from a directory
@@ -152,95 +153,29 @@ func FromFile(file string) (Problem, error) {
 	return problem, nil
 }
 
-// creates a new problem from given points and info
-func NewProblem(route Route, info Info) *Problem {
-	p := Problem{Route: route, Info: info}
-	p.calculateAdjacency()
-	return &p
-}
-
-// converts given cycles to routes
-func (p *Problem) GetRoutesFromCycles(cycles Cycles) Routes {
-	routes := make(Routes, len(cycles))
-
-	for i, cycle := range cycles {
-		ps := make(Route, len(cycle))
-
-		// find minimum in cycle
-		minIndex, minValue := 0, -1
-		for j := range cycle {
-			if minValue == -1 {
-				minValue = cycle[j]
-			}
-
-			if minValue > cycle[j] {
-				minIndex, minValue = j, cycle[j]
-			}
-		}
-
-		// direction
-		minLeft, minRight := minIndex-1, minIndex+1
-		if minLeft < 0 {
-			minLeft = len(cycle) - 1
-		}
-		if minRight > len(cycle)-1 {
-			minRight = 0
-		}
-
-		walkRight := cycle[minRight] < cycle[minLeft]
-
-		// start cycle with minimum-index
-		orderedCycle := make(Cycle, len(cycle))
-		for j := 0; j < len(cycle); j++ {
-			if walkRight {
-				orderedCycle[j] = cycle[(minIndex+j)%len(cycle)]
-			} else {
-				i := minIndex - j
-				if i < 0 {
-					i = len(cycle) - 1 + i
-				}
-				orderedCycle[j] = cycle[i]
-			}
-		}
-
-		// create route
-		for j, id := range orderedCycle {
-			ps[j] = p.Route[id]
-		}
-
-		routes[i] = ps
+func (p *Problem) UpdateRoute(cycle Cycle) {
+	// set new route
+	route := make(Route, len(cycle))
+	for i, j := range cycle {
+		route[i] = p.Points[j]
 	}
+	p.ShortestRoute = route
 
-	return routes
-}
-
-func (p *Problem) GetDistancesFromCycles(cycles Cycles) []float64 {
-	distances := make([]float64, len(cycles))
-	for j, cycle := range cycles {
-
-		var distance float64
-		for k, i := range cycle {
-			if k == len(cycle)-1 {
-				distance += p.Adjacency[i][0]
-			} else {
-				distance += p.Adjacency[i][i+1]
-			}
+	// calculate new distance
+	var distance float64
+	for i := range cycle {
+		if i == len(cycle)-1 {
+			distance += p.Adjacency[cycle[i]][cycle[0]]
+		} else {
+			distance += p.Adjacency[cycle[i]][cycle[i+1]]
 		}
-
-		distances[j] = distance
 	}
-
-	return distances
-}
-
-// name of the problem
-func (p Problem) String() string {
-	return p.Info.Name
+	p.ShortestDistance = distance
 }
 
 // calculates the adjacency matrix of the problem with given points
-// uses the haversine-formula to calculate distances for "geographic" problems
-// uses euclidean distance for "euclidean" problems
+// 		- uses the haversine-formula to calculate distances for "geographic" problems
+// 		- uses euclidean distance for "euclidean" problems
 func (p *Problem) calculateAdjacency() {
 	var calcDistance func(p1, p2 Point) float64
 
@@ -254,11 +189,11 @@ func (p *Problem) calculateAdjacency() {
 	}
 
 	// allocate adjacency and calculate distances
-	p.Adjacency = make(Adjacency, len(p.Route))
-	for i, rowPoint := range p.Route {
+	p.Adjacency = make(Adjacency, len(p.Points))
+	for i, rowPoint := range p.Points {
 
-		adjRow := make([]float64, len(p.Route))
-		for j, colPoint := range p.Route {
+		adjRow := make([]float64, len(p.Points))
+		for j, colPoint := range p.Points {
 			adjRow[j] = calcDistance(rowPoint, colPoint)
 		}
 
@@ -271,7 +206,7 @@ const EarthRadius = 6371
 
 // calculates the shortest point between two points located on a sphere (the earth)
 func haversine(p1, p2 Point) float64 {
-	deg2rad := func(deg float32) float64 { return (math.Pi * float64(deg)) / 180 }
+	deg2rad := func(deg float64) float64 { return (math.Pi * deg) / 180 }
 
 	lat1 := deg2rad(p1.X)
 	lat2 := deg2rad(p2.X)
@@ -292,4 +227,23 @@ func euclidean(p1, p2 Point) float64 {
 	deltaX := math.Abs(float64(p1.X - p2.X))
 	deltaY := math.Abs(float64(p1.Y - p2.Y))
 	return float64(math.Sqrt(math.Pow(deltaX, 2) + math.Pow(deltaY, 2)))
+}
+
+func (p *Problem) MapRouteToImageCoordinates() []int {
+	coordinates := make([]int, 2*len(p.ShortestRoute))
+
+	xDiff := math.Abs(p.Image.X1 - p.Image.X2)
+	yDiff := math.Abs(p.Image.Y1 - p.Image.Y2)
+
+	xPixel := float64(p.Image.Width) / xDiff
+	yPixel := float64(p.Image.Height) / yDiff
+
+	for i, point := range p.ShortestRoute {
+		x := (point.X - p.Image.X1) * xPixel
+		y := (p.Image.Y1 - point.Y) * yPixel
+		coordinates[i*2] = int(x)
+		coordinates[i*2+1] = int(y)
+	}
+
+	return coordinates
 }

@@ -4,19 +4,28 @@
         "description": "The thirteen biggest german cities by population",
         "type": "geographic"
     },
+    "image": {
+        "path": "/home/octav/develope/leistungsnachweis-graphiker/samples/germany.png",
+        "x1": 5.5,
+        "y1": 55.1,
+        "x2": 15.5,
+        "y2": 47.2,
+        "width": 1000,
+        "height": 1186
+    },
     "points": [
-        {"x": 13.23, "y": 52.31, "name": "Berlin"},
-        {"x": 10.0, "y": 53.33, "name": "Hamburg"},
-        {"x": 11.34, "y": 48.8, "name": "München"},
-        {"x": 6.57, "y": 50.56, "name": "Köln"},
-        {"x": 8.41, "y": 50.7, "name": "Frankfurt"},
-        {"x": 9.11, "y": 48.47, "name": "Stuttgart"},
-        {"x": 6.47, "y": 51.14, "name": "Düsseldorf"},
-        {"x": 7.28, "y": 51.31, "name": "Dortmund"},
-        {"x": 7.1, "y": 51.27, "name": "Essen"},
-        {"x": 12.23, "y": 51.2, "name": "Leipzig"},
-        {"x": 8.48, "y": 53.5, "name": "Bremen"},
-        {"x": 13.44, "y": 51.2, "name": "Dresden"},
-        {"x": 9.43, "y": 52.22, "name": "Hannover"}
+        {"x": 13.40514, "y": 52.5246, "name": "Berlin"},
+        {"x": 9.994583, "y": 53.5544, "name": "Hamburg"},
+        {"x": 11.5755, "y": 48.1374, "name": "München"},
+        {"x": 6.95000, "y": 50.9333, "name": "Köln"},
+        {"x": 8.68333, "y": 50.1167, "name": "Frankfurt"},
+        {"x": 9.1770, "y": 48.7823, "name": "Stuttgart"},
+        {"x": 6.8121, "y": 51.2205, "name": "Düsseldorf"},
+        {"x": 7.4660, "y": 51.5149, "name": "Dortmund"},
+        {"x": 7.0086, "y": 51.4624, "name": "Essen"},
+        {"x": 12.3713, "y": 51.3396, "name": "Leipzig"},
+        {"x": 8.8077, "y": 53.07516, "name": "Bremen"},
+        {"x": 13.7500, "y": 51.0500, "name": "Dresden"},
+        {"x": 9.7332, "y": 52.3705, "name": "Hannover"}
     ]
 }

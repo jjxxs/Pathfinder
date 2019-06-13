@@ -1,21 +1,20 @@
 package algorithm
 
 import (
-	"errors"
 	"leistungsnachweis-graphiker/problem"
 	"math"
 )
 
 type HeldKarp struct {
-	primes           []int
-	ShortestDistance float64 `json:"shortestDistance"`
-	ShortestCycle    []int   `json:"shortestCycle"`
 	running          bool
+	primes           []int
+	shortestDistance float64
+	shortestCycle    problem.Cycle
 }
 
 func NewHeldKarp() *HeldKarp {
 	return &HeldKarp{
-		ShortestDistance: math.MaxFloat64,
+		shortestDistance: math.MaxFloat64,
 	}
 }
 
@@ -23,7 +22,7 @@ func (a *HeldKarp) Stop() {
 	a.running = false
 }
 
-func (a *HeldKarp) Solve(adjacency problem.Adjacency, cycles chan problem.Cycles) {
+func (a *HeldKarp) Solve(adjacency problem.Adjacency, updates chan problem.Cycle) {
 	a.running = true
 
 	set := make([]int, len(adjacency))
@@ -60,8 +59,8 @@ func (a *HeldKarp) Solve(adjacency problem.Adjacency, cycles chan problem.Cycles
 			continue
 		}
 
-		// for every i, find the shortest distance that goes from i through subset to 0
-		// e.g. choose a j from subset that connects to i so that distance is minimal
+		// for every i, find the shortest shortestDistance that goes from i through subset to 0
+		// e.g. choose a j from subset that connects to i so that shortestDistance is minimal
 	NextElement:
 		for _, i := range set {
 
@@ -74,7 +73,7 @@ func (a *HeldKarp) Solve(adjacency problem.Adjacency, cycles chan problem.Cycles
 
 			hash := a.getHash(subset)
 
-			//  try for every j in subset the route from i to j through subset so that the distance is minimal
+			//  try for every j in subset the route from i to j through subset so that the shortestDistance is minimal
 			minDistance := float64(math.MaxFloat64)
 			minJ := 0
 			for _, j := range subset {
@@ -113,12 +112,12 @@ func (a *HeldKarp) Solve(adjacency problem.Adjacency, cycles chan problem.Cycles
 		backtrackingSet[i] = i + 1
 	}
 
-	a.ShortestCycle = make(problem.Cycle, len(set))
+	a.shortestCycle = make(problem.Cycle, len(set))
 	last := 0
 	for i := range set {
 		h := a.getHash(backtrackingSet)
-		a.ShortestCycle[i] = backtracking[last][h]
-		last = a.ShortestCycle[i]
+		a.shortestCycle[i] = backtracking[last][h]
+		last = a.shortestCycle[i]
 
 		tmpSet := make(Set, len(backtrackingSet)-1)
 
@@ -128,7 +127,7 @@ func (a *HeldKarp) Solve(adjacency problem.Adjacency, cycles chan problem.Cycles
 
 		index := 0
 		for j := range backtrackingSet {
-			if backtrackingSet[j] == a.ShortestCycle[i] {
+			if backtrackingSet[j] == a.shortestCycle[i] {
 				continue
 			}
 			tmpSet[index] = backtrackingSet[j]
@@ -137,13 +136,13 @@ func (a *HeldKarp) Solve(adjacency problem.Adjacency, cycles chan problem.Cycles
 		backtrackingSet = tmpSet
 	}
 
-	// get shortest distance from table
+	// get shortest shortestDistance from table
 	hShortestCycle := a.getHash(set[1:])
-	a.ShortestDistance = table[0][hShortestCycle]
+	a.shortestDistance = table[0][hShortestCycle]
 
 	// done, write solution to channel
-	cycles <- problem.Cycles{a.ShortestCycle}
-	close(cycles)
+	updates <- a.shortestCycle
+	close(updates)
 	a.running = false
 }
 
@@ -155,20 +154,4 @@ func (a *HeldKarp) getHash(s Set) int {
 	}
 
 	return hash
-}
-
-func (a *HeldKarp) GetSolution() (error, float64, problem.Cycle) {
-	if a.running {
-		return errors.New("still running"), 0, nil
-	}
-
-	if !a.running && a.ShortestDistance == math.MaxFloat64 {
-		return errors.New("not solved"), 0, nil
-	}
-
-	return nil, a.ShortestDistance, a.ShortestCycle
-}
-
-func (a HeldKarp) String() string {
-	return "Held-Karp"
 }

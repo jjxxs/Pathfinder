@@ -1,7 +1,6 @@
 package algorithm
 
 import (
-	"errors"
 	"log"
 	"math"
 	"time"
@@ -10,15 +9,15 @@ import (
 )
 
 type BruteForce struct {
-	ShortestDistance float64 `json:"shortestDistance"`
-	ShortestCycle    []int   `json:"shortestCycle"`
-	Calculations     uint64  `json:"calculations"`
 	running          bool
+	calculations     uint64
+	shortestDistance float64
+	shortestCycle    []int
 }
 
 func NewBruteForce() *BruteForce {
 	return &BruteForce{
-		ShortestDistance: math.MaxFloat64,
+		shortestDistance: math.MaxFloat64,
 	}
 }
 
@@ -28,7 +27,7 @@ func (a *BruteForce) Stop() {
 
 //  64.099.164
 // 132.215.492
-func (a *BruteForce) Solve(adjacency problem.Adjacency, cycles chan problem.Cycles) {
+func (a *BruteForce) Solve(adjacency problem.Adjacency, updates chan problem.Cycle) {
 	// set state to running
 	a.running = true
 	log.Printf("solving problemset with %d entries using bruteforce", len(adjacency))
@@ -42,7 +41,7 @@ func (a *BruteForce) Solve(adjacency problem.Adjacency, cycles chan problem.Cycl
 		points[i] = i
 	}
 
-	// calculate distance for the first permutation
+	// calculate shortestDistance for the first permutation
 	var distance float64
 	for i := range points {
 		if i == len(points)-1 {
@@ -52,14 +51,14 @@ func (a *BruteForce) Solve(adjacency problem.Adjacency, cycles chan problem.Cycl
 		}
 	}
 
-	// found new shortest cycle, set properties
+	// found new shortest shortestCycle, set properties
 	shortestCycle := make([]int, len(points))
 	copy(shortestCycle, points)
-	a.ShortestDistance = distance
-	a.ShortestCycle = shortestCycle
+	a.shortestDistance = distance
+	a.shortestCycle = shortestCycle
 
 	// forward result to session
-	cycles <- []problem.Cycle{problem.Cycle(shortestCycle)}
+	updates <- problem.Cycle(shortestCycle)
 
 	// heap's algorithm
 	c := make([]int, len(adjacency))
@@ -73,7 +72,6 @@ func (a *BruteForce) Solve(adjacency problem.Adjacency, cycles chan problem.Cycl
 	i := 0
 	for i < cLength && a.running {
 		if c[i] < i {
-
 			// which point to swap with
 			j := 0
 			if i%2 != 0 {
@@ -117,16 +115,16 @@ func (a *BruteForce) Solve(adjacency problem.Adjacency, cycles chan problem.Cycl
 				adjacency[points[i]][points[iLeft]] +
 				adjacency[points[i]][points[iRight]]
 
-			if distance < a.ShortestDistance {
-				// found new shortest cycle, set properties and forward the result
+			if distance < a.shortestDistance {
+				// found new shortest shortestCycle, set properties and forward the result
 				shortestCycle := make([]int, len(points))
 				copy(shortestCycle, points)
-				a.ShortestDistance = distance
-				a.ShortestCycle = shortestCycle
-				cycles <- []problem.Cycle{problem.Cycle(shortestCycle)}
+				a.shortestDistance = distance
+				a.shortestCycle = shortestCycle
+				updates <- problem.Cycle(shortestCycle)
 			}
 
-			a.Calculations++
+			a.calculations++
 			c[i] += 1
 			i = 0
 		} else {
@@ -136,20 +134,8 @@ func (a *BruteForce) Solve(adjacency problem.Adjacency, cycles chan problem.Cycl
 	}
 
 	// finished, close the channel and set state
-	close(cycles)
+	close(updates)
 	a.running = false
-}
-
-func (a *BruteForce) GetSolution() (error, float64, problem.Cycle) {
-	if a.running {
-		return errors.New("still running"), 0, nil
-	}
-
-	if !a.running && a.ShortestDistance == math.MaxFloat64 {
-		return errors.New("not solved"), 0, nil
-	}
-
-	return nil, a.ShortestDistance, a.ShortestCycle
 }
 
 func (a *BruteForce) worker() {
@@ -158,11 +144,7 @@ func (a *BruteForce) worker() {
 	defer ticker.Stop()
 	for a.running {
 		<-ticker.C
-		cps := float64(a.Calculations) / time.Since(startTime).Seconds()
-		log.Printf("Calculations per second: %d", int64(cps))
+		cps := float64(a.calculations) / time.Since(startTime).Seconds()
+		log.Printf("calculations per second: %d", int64(cps))
 	}
-}
-
-func (a BruteForce) String() string {
-	return "Bruteforce"
 }

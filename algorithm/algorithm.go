@@ -8,18 +8,18 @@ import (
 )
 
 type Algorithm interface {
-	String() string
-	Solve(adjacency problem.Adjacency, cycles chan problem.Cycles)
+	Solve(adjacency problem.Adjacency, updates chan problem.Cycle)
 	Stop()
-	GetSolution() (error, float64, problem.Cycle)
 }
 
 func FromString(algorithmName string) (Algorithm, error) {
 	switch alg := strings.ToLower(algorithmName); alg {
+	//case "mst":
+	//	return NewMst(), nil
 	case "bruteforce":
 		return NewBruteForce(), nil
-	case "heldkarp":
-		return NewHeldKarp(), nil
+	//case "heldkarp":
+	//	return NewHeldKarp(), nil
 	default:
 		return nil, fmt.Errorf("algorithm not found: %s", algorithmName)
 	}
