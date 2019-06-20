@@ -55,8 +55,8 @@ type Set []int
 // generates all 2^n possible subsets of the specified set
 // returns them in order, ascending by length and
 // and ascending by elements
-func PowerSet(S Set) []Set {
-	cardinality := uint(math.Pow(2, float64(len(S))))
+func PowerSet(s Set) []Set {
+	cardinality := uint(math.Pow(2, float64(len(s))))
 	results := make([]Set, cardinality)
 
 	for i := uint(0); i < cardinality; i++ {
@@ -65,9 +65,9 @@ func PowerSet(S Set) []Set {
 		bitMask := i
 		for j := 0; j < bits.Len(i); j++ {
 			if bitMask%2 == 1 {
-				currentSet = append(currentSet, S[j])
+				currentSet = append(currentSet, s[j])
 			}
-			bitMask = bitMask >> 1
+			bitMask >>= 1
 		}
 
 		sort.Ints(currentSet)

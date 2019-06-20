@@ -155,3 +155,7 @@ func (a *HeldKarp) getHash(s Set) int {
 
 	return hash
 }
+
+func (a HeldKarp) String() string {
+	return "Held-Karp"
+}

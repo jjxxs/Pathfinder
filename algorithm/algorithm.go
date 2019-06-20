@@ -10,6 +10,7 @@ import (
 type Algorithm interface {
 	Solve(adjacency problem.Adjacency, updates chan problem.Cycle)
 	Stop()
+	String() string
 }
 
 func FromString(algorithmName string) (Algorithm, error) {
@@ -18,8 +19,8 @@ func FromString(algorithmName string) (Algorithm, error) {
 	//	return NewMst(), nil
 	case "bruteforce":
 		return NewBruteForce(), nil
-	//case "heldkarp":
-	//	return NewHeldKarp(), nil
+	case "heldkarp":
+		return NewHeldKarp(), nil
 	default:
 		return nil, fmt.Errorf("algorithm not found: %s", algorithmName)
 	}

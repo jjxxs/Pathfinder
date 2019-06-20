@@ -6,6 +6,7 @@ import (
 	"leistungsnachweis-graphiker/problem"
 	"leistungsnachweis-graphiker/web"
 	"log"
+	"math"
 	"time"
 )
 
@@ -32,6 +33,7 @@ func NewCli(algorithmName, problemPath, bind string) CliController {
 		log.Fatal(err)
 	}
 
+	// start web-handler
 	wh, err := web.NewHandler(prob.Image.Path, bind)
 	if err != nil {
 		log.Fatal(err)
@@ -45,6 +47,20 @@ func (c *CliController) Start() {
 	c.startTime = time.Now()
 	updates := make(chan problem.Cycle, 10)
 	go c.algorithm.Solve(c.problem.Adjacency, updates)
+
+	// ticker to update stats every second
+	ticker := time.NewTicker(1 * time.Second)
+
+	// immediately send status
+	status := problem.Status{
+		Algorithm:   c.algorithm.String(),
+		Problem:     c.problem.Info.Name,
+		Description: c.problem.Info.Description,
+		Elapsed:     time.Since(c.startTime).String(),
+		Shortest:    math.Round(c.problem.ShortestDistance*100) / 100,
+		Running:     true,
+	}
+	c.webHandler.Status <- status
 
 	for c.running {
 		select {
@@ -63,8 +79,20 @@ func (c *CliController) Start() {
 			fmt.Printf("received update:\n\tRoute: %v\n\tDistance: %f\n", c.problem.ShortestRoute, c.problem.ShortestDistance)
 			coordinates := c.problem.MapRouteToImageCoordinates()
 			c.webHandler.Updates <- coordinates
+		case <-ticker.C:
+			status := problem.Status{
+				Algorithm:   c.algorithm.String(),
+				Problem:     c.problem.Info.Name,
+				Description: c.problem.Info.Description,
+				Elapsed:     time.Since(c.startTime).String(),
+				Shortest:    math.Round(c.problem.ShortestDistance*100) / 100,
+				Running:     true,
+			}
+			c.webHandler.Status <- status
 		case <-time.After(100 * time.Millisecond):
 			break
 		}
 	}
+
+	ticker.Stop()
 }

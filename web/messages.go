@@ -1,8 +1,11 @@
 package web
 
+import "leistungsnachweis-graphiker/problem"
+
 const (
 	PostImage   = "PostImage"
 	Coordinates = "Coordinates"
+	Status      = "Status"
 )
 
 type Message struct {
@@ -16,4 +19,8 @@ type ImageMessageData struct {
 
 type CoordinatesMessageData struct {
 	Coordinates []int `json:"coordinates"`
+}
+
+type StatusMessageData struct {
+	Status problem.Status `json:"status"`
 }

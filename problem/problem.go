@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"math"
+	"math/rand"
 	"os"
 	"path/filepath"
 	"strings"
@@ -76,6 +77,15 @@ type Point struct {
 	X    float64 `json:"x"`
 	Y    float64 `json:"y"`
 	Name string  `json:"name"`
+}
+
+type Status struct {
+	Algorithm   string  `json:"algorithm"`
+	Problem     string  `json:"problem"`
+	Description string  `json:"description"`
+	Elapsed     string  `json:"elapsed"`
+	Shortest    float64 `json:"shortest"`
+	Running     bool    `json:"running"`
 }
 
 // loads a set of problems from a directory
@@ -188,6 +198,9 @@ func (p *Problem) calculateAdjacency() {
 		calcDistance = euclidean
 	}
 
+	// shuffle before calculating adjacency
+	rand.Shuffle(len(p.Points), func(i, j int) { p.Points[i], p.Points[j] = p.Points[j], p.Points[i] })
+
 	// allocate adjacency and calculate distances
 	p.Adjacency = make(Adjacency, len(p.Points))
 	for i, rowPoint := range p.Points {
@@ -232,17 +245,24 @@ func euclidean(p1, p2 Point) float64 {
 func (p *Problem) MapRouteToImageCoordinates() []int {
 	coordinates := make([]int, 2*len(p.ShortestRoute))
 
-	xDiff := math.Abs(p.Image.X1 - p.Image.X2)
-	yDiff := math.Abs(p.Image.Y1 - p.Image.Y2)
+	if p.Info.Type == "geographic" {
+		xDiff := math.Abs(p.Image.X1 - p.Image.X2)
+		yDiff := math.Abs(p.Image.Y1 - p.Image.Y2)
 
-	xPixel := float64(p.Image.Width) / xDiff
-	yPixel := float64(p.Image.Height) / yDiff
+		xPixel := float64(p.Image.Width) / xDiff
+		yPixel := float64(p.Image.Height) / yDiff
 
-	for i, point := range p.ShortestRoute {
-		x := (point.X - p.Image.X1) * xPixel
-		y := (p.Image.Y1 - point.Y) * yPixel
-		coordinates[i*2] = int(x)
-		coordinates[i*2+1] = int(y)
+		for i, point := range p.ShortestRoute {
+			x := (point.X - p.Image.X1) * xPixel
+			y := (p.Image.Y1 - point.Y) * yPixel
+			coordinates[i*2] = int(x)
+			coordinates[i*2+1] = int(y)
+		}
+	} else {
+		for i, point := range p.ShortestRoute {
+			coordinates[i*2] = int(point.X)
+			coordinates[i*2+1] = int(point.Y)
+		}
 	}
 
 	return coordinates

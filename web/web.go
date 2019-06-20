@@ -3,6 +3,7 @@ package web
 import (
 	"encoding/base64"
 	"io/ioutil"
+	"leistungsnachweis-graphiker/problem"
 	"log"
 	"net/http"
 	"os"
@@ -19,6 +20,7 @@ type Handler struct {
 	connections []*websocket.Conn
 	sync        sync.Mutex
 	Updates     chan []int
+	Status      chan problem.Status
 }
 
 func NewHandler(image, bind string) (*Handler, error) {
@@ -41,6 +43,7 @@ func NewHandler(image, bind string) (*Handler, error) {
 		connections: make([]*websocket.Conn, 0),
 		sync:        sync.Mutex{},
 		Updates:     make(chan []int, 100),
+		Status:      make(chan problem.Status, 10),
 	}
 
 	go wh.startListen()
@@ -101,9 +104,11 @@ func (wh *Handler) removeConnection(conn *websocket.Conn) {
 func (wh *Handler) processUpdates() {
 	for {
 		select {
-		case update, _ := <-wh.Updates:
+		case update := <-wh.Updates:
 			wh.sendUpdate(update)
-			time.Sleep(100 * time.Millisecond)
+			time.Sleep(100 * time.Millisecond) // hack, to prevent frontend to draw too fast
+		case status := <-wh.Status:
+			wh.sendStatus(status)
 		case <-time.After(100 * time.Millisecond):
 			break
 		}
@@ -112,7 +117,6 @@ func (wh *Handler) processUpdates() {
 
 func (wh *Handler) sendUpdate(coordinates []int) {
 	for _, conn := range wh.connections {
-
 		msg := Message{Type: Coordinates, Data: CoordinatesMessageData{Coordinates: coordinates}}
 		err := conn.WriteJSON(msg)
 
@@ -122,6 +126,17 @@ func (wh *Handler) sendUpdate(coordinates []int) {
 	}
 }
 
-func checkOriginTrue(r *http.Request) bool {
+func (wh *Handler) sendStatus(status problem.Status) {
+	for _, conn := range wh.connections {
+		msg := Message{Type: Status, Data: StatusMessageData{Status: status}}
+		err := conn.WriteJSON(msg)
+
+		if err != nil {
+			wh.removeConnection(conn)
+		}
+	}
+}
+
+func checkOriginTrue(_ *http.Request) bool {
 	return true
 }

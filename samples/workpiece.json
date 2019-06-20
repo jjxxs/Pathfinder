@@ -4,6 +4,11 @@
         "description": "Technical drawing of a flat workpiece with prisms",
         "type": "euclidean"
     },
+    "image": {
+        "path": "/home/octav/develope/leistungsnachweis-graphiker/samples/workpiece.png",
+        "width": 702,
+        "height": 1038
+    },
     "points": [
         {"x": 230, "y": 138},
         {"x": 195, "y": 197},
@@ -19,10 +24,10 @@
         {"x": 278, "y": 555},
         {"x": 389, "y": 555},
         {"x": 513, "y": 537},
+        {"x": 350, "y": 274},
         {"x": 559, "y": 537},
         {"x": 559, "y": 138},
         {"x": 309, "y": 207},
-        {"x": 350, "y": 274},
         {"x": 270, "y": 274},
         {"x": 328, "y": 432},
         {"x": 328, "y": 450},
@@ -31,9 +36,9 @@
         {"x": 239, "y": 441},
         {"x": 276, "y": 406},
         {"x": 309, "y": 433},
+        {"x": 417, "y": 273},
         {"x": 456, "y": 312},
         {"x": 456, "y": 235},
-        {"x": 417, "y": 273},
         {"x": 494, "y": 273}
     ]
 }

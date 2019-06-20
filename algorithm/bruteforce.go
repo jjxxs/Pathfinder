@@ -125,7 +125,7 @@ func (a *BruteForce) Solve(adjacency problem.Adjacency, updates chan problem.Cyc
 			}
 
 			a.calculations++
-			c[i] += 1
+			c[i]++
 			i = 0
 		} else {
 			c[i] = 0
@@ -147,4 +147,8 @@ func (a *BruteForce) worker() {
 		cps := float64(a.calculations) / time.Since(startTime).Seconds()
 		log.Printf("calculations per second: %d", int64(cps))
 	}
+}
+
+func (a BruteForce) String() string {
+	return "Bruteforce"
 }
