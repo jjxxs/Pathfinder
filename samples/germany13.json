@@ -1,0 +1,31 @@
+{
+    "info": {
+        "name": "Germany 13",
+        "description": "The thirteen biggest german cities by population",
+        "type": "geographic"
+    },
+    "image": {
+        "path": "/solver/samples/germany.png",
+        "x1": 5.5,
+        "y1": 55.1,
+        "x2": 15.5,
+        "y2": 47.2,
+        "width": 1000,
+        "height": 1186
+    },
+    "points": [
+        {"x": 13.40514, "y": 52.5246, "name": "Berlin"},
+        {"x": 9.994583, "y": 53.5544, "name": "Hamburg"},
+        {"x": 11.5755, "y": 48.1374, "name": "München"},
+        {"x": 6.95000, "y": 50.9333, "name": "Köln"},
+        {"x": 8.68333, "y": 50.1167, "name": "Frankfurt"},
+        {"x": 9.1770, "y": 48.7823, "name": "Stuttgart"},
+        {"x": 6.8121, "y": 51.2205, "name": "Düsseldorf"},
+        {"x": 7.4660, "y": 51.5149, "name": "Dortmund"},
+        {"x": 7.0086, "y": 51.4624, "name": "Essen"},
+        {"x": 12.3713, "y": 51.3396, "name": "Leipzig"},
+        {"x": 8.8077, "y": 53.07516, "name": "Bremen"},
+        {"x": 13.7500, "y": 51.0500, "name": "Dresden"},
+        {"x": 9.7332, "y": 52.3705, "name": "Hannover"}
+    ]
+}

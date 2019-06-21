@@ -1,0 +1,66 @@
+@font-face {
+  font-family: 'Gugi';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Gugi Regular'), local('Gugi-Regular'), url(https://fonts.gstatic.com/s/gugi/v7/A2BVn5dXywshZAmK8A.ttf) format('truetype');
+}
+.content {
+  min-height: 100vh;
+  background: #F4F7F2;
+  background-image: url('./static/brushed-alum-dark.png');
+}
+.content .header {
+  background: #46765E;
+  background-image: url('./static/cartographer.png');
+  min-height: 100px;
+  max-height: 100px;
+  border-bottom: 3px solid #344C64;
+}
+.content .app {
+  position: absolute;
+  background: #E1E6E3;
+  min-width: 1280px;
+  min-height: 720px;
+  box-shadow: 2px 2px 20px 0 black;
+  border: 3px solid #344C64;
+  top: 25px;
+}
+.content .app .offline-banner {
+  width: 125px;
+}
+.content .app .j-image svg {
+  position: absolute;
+}
+.content .app .info-panel {
+  width: 200px;
+  border-right: 1px solid black;
+}
+.content .app .info-panel .banner {
+  max-height: 200px;
+}
+.content .app .info-panel .banner img {
+  width: 180px;
+  height: 180px;
+}
+.content .app .info-panel .banner h3 {
+  font-size: 22px;
+  position: relative;
+  top: -20px;
+  font-family: 'Gugi', monospace;
+  font-weight: 100;
+}
+.content .app .info-panel h4 {
+  font-size: 20px;
+  color: #344C64;
+}
+.content .app .info-panel h5 {
+  font-style: italic;
+  font-size: 16px;
+  padding-left: 12px;
+  padding-bottom: 12px;
+}
+.content .app .map img {
+  max-height: 620px;
+  min-height: 620px;
+}
+/*# sourceMappingURL=App.css.map */
