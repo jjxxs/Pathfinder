@@ -53,7 +53,7 @@ func TestPowerSet(t *testing.T) {
 	}
 
 	if len(isSet) != len(shouldSet) {
-		t.Fatalf("sets have differen lengths")
+		t.Fatalf("sets have different lengths")
 	}
 
 	for i := range isSet {

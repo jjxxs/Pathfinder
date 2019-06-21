@@ -11,6 +11,11 @@ import (
 	"strings"
 )
 
+const (
+	Geographic = "geographic"
+	Euclidean  = "euclidean"
+)
+
 // contains the distances between each point on a route
 type Adjacency [][]float64
 
@@ -86,6 +91,14 @@ type Status struct {
 	Elapsed     string  `json:"elapsed"`
 	Shortest    float64 `json:"shortest"`
 	Running     bool    `json:"running"`
+}
+
+func NewProblem(points []Point) *Problem {
+	p := Problem{
+		Points: points,
+	}
+	p.calculateAdjacency()
+	return &p
 }
 
 // loads a set of problems from a directory
@@ -190,9 +203,9 @@ func (p *Problem) calculateAdjacency() {
 	var calcDistance func(p1, p2 Point) float64
 
 	switch pType := strings.ToLower(p.Info.Type); pType {
-	case "geographic":
+	case Geographic:
 		calcDistance = haversine
-	case "euclidean":
+	case Euclidean:
 		calcDistance = euclidean
 	default:
 		calcDistance = euclidean
@@ -232,20 +245,20 @@ func haversine(p1, p2 Point) float64 {
 	a := math.Pow(math.Sin(deltaLat/2), 2) + math.Cos(lat1)*math.Cos(lat2)*math.Pow(math.Sin(deltaLong/2), 2)
 	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
 
-	return float64(EarthRadius * c)
+	return EarthRadius * c
 }
 
 // calculates the shortest distance between two points in an euclidean system
 func euclidean(p1, p2 Point) float64 {
-	deltaX := math.Abs(float64(p1.X - p2.X))
-	deltaY := math.Abs(float64(p1.Y - p2.Y))
-	return float64(math.Sqrt(math.Pow(deltaX, 2) + math.Pow(deltaY, 2)))
+	deltaX := math.Abs(p1.X - p2.X)
+	deltaY := math.Abs(p1.Y - p2.Y)
+	return math.Sqrt(math.Pow(deltaX, 2) + math.Pow(deltaY, 2))
 }
 
 func (p *Problem) MapRouteToImageCoordinates() []int {
 	coordinates := make([]int, 2*len(p.ShortestRoute))
 
-	if p.Info.Type == "geographic" {
+	if p.Info.Type == Geographic {
 		xDiff := math.Abs(p.Image.X1 - p.Image.X2)
 		yDiff := math.Abs(p.Image.Y1 - p.Image.Y2)
 
