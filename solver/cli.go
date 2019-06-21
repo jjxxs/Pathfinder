@@ -1,7 +1,6 @@
 package solver
 
 import (
-	"fmt"
 	"leistungsnachweis-graphiker/algorithm"
 	"leistungsnachweis-graphiker/problem"
 	"leistungsnachweis-graphiker/web"
@@ -33,13 +32,16 @@ func NewCli(algorithmName, problemPath, bind string) CliController {
 		log.Fatal(err)
 	}
 
-	// start web-handler
-	wh, err := web.NewHandler(prob.Image.Path, bind)
-	if err != nil {
-		log.Fatal(err)
+	// start webhandler?
+	if len(bind) != 0 {
+		wh, err := web.NewHandler(prob.Image.Path, bind)
+		if err != nil {
+			log.Fatal(err)
+		}
+		return CliController{algorithm: alg, problem: prob, webHandler: wh}
 	}
 
-	return CliController{algorithm: alg, problem: prob, webHandler: wh}
+	return CliController{algorithm: alg, problem: prob}
 }
 
 func (c *CliController) Start() {
@@ -60,14 +62,17 @@ func (c *CliController) Start() {
 		Shortest:    math.Round(c.problem.ShortestDistance*100) / 100,
 		Running:     true,
 	}
-	c.webHandler.Status <- status
+
+	if c.webHandler != nil {
+		c.webHandler.Status <- status
+	}
 
 	for c.running {
 		select {
 		case update, more := <-updates:
 			if !more {
 				c.running = false
-				fmt.Printf("finished execution of problemset \"%s\":\n\tRoute: %v\n\tDistance: %f\n\tTime: %fs\n",
+				log.Printf("Finished execution of problemset \"%s\":\n\tRoute: %v\n\tDistance: %f\n\tTime: %fs\n",
 					c.problem.Info.Name,
 					c.problem.ShortestRoute,
 					c.problem.ShortestDistance,
@@ -76,10 +81,15 @@ func (c *CliController) Start() {
 				break
 			}
 			c.problem.UpdateRoute(update)
-			fmt.Printf("received update:\n\tRoute: %v\n\tDistance: %f\n", c.problem.ShortestRoute, c.problem.ShortestDistance)
-			coordinates := c.problem.MapRouteToImageCoordinates()
-			c.webHandler.Updates <- coordinates
+			log.Printf("New Route:\n\tRoute: %v\n\tDistance: %f\n", c.problem.ShortestRoute, c.problem.ShortestDistance)
+			if c.webHandler != nil {
+				coordinates := c.problem.MapRouteToImageCoordinates()
+				c.webHandler.Updates <- coordinates
+			}
 		case <-ticker.C:
+			if c.webHandler == nil {
+				continue
+			}
 			status := problem.Status{
 				Algorithm:   c.algorithm.String(),
 				Problem:     c.problem.Info.Name,

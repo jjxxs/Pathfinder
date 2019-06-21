@@ -5,7 +5,7 @@
         "type": "geographic"
     },
     "image": {
-        "path": "/home/octav/develope/leistungsnachweis-graphiker/samples/germany.png",
+        "path": "/solver/samples/germany.png",
         "x1": 5.5,
         "y1": 55.1,
         "x2": 15.5,

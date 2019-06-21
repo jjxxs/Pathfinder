@@ -3,22 +3,23 @@
 # Pathfinder
 Yet another solver for the [Traveling Salesman Problem](https://en.wikipedia.org/wiki/Travelling_salesman_problem).
 Provides simple abstractions to be easily extendable with user-defined algorithms and problem-sets. Comes with a
-nice webui that enables the user to control the application and watch the state of the solver.
+nice webui that enables the user to watch the state of the solver.
 
 ```
 NAME:
    Pathfinder - A solver for the travelling salesman problem
 
 USAGE:
-   pathfinder [global options] command [command options] [arguments...]
+   main [global options] command [command options] [arguments...]
 
 COMMANDS:
-     web      starts the solver as a webservice
-     cli      starts the solver without the webservice
      help, h  Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
-   --help, -h  show help
+   --algorithm value  name of the algorithm to use
+   --problem value    path to the problem-file to be solved
+   --bind value       address to listen for websocket-connections
+   --help, -h         show help
 ```
 
 ## Features
@@ -33,20 +34,29 @@ Instances/Problems are defined using JSON, e.g.:
         "description": "The thirteen biggest german cities by population",
         "type": "geographic"
     },
+    "image": {
+        "path": "/home/pathfinder/samples/germany.png",
+        "x1": 5.5,
+        "y1": 55.1,
+        "x2": 15.5,
+        "y2": 47.2,
+        "width": 1000,
+        "height": 1186
+    },
     "points": [
-        {"x": 13.23, "y": 52.31, "name": "Berlin"},
-        {"x": 10.0, "y": 53.33, "name": "Hamburg"},
-        {"x": 11.34, "y": 48.8, "name": "Munich"},
-        {"x": 6.57, "y": 50.56, "name": "Cologne"},
-        {"x": 8.41, "y": 50.7, "name": "Frankfurt"},
-        {"x": 9.11, "y": 48.47, "name": "Stuttgart"},
-        {"x": 6.47, "y": 51.14, "name": "Düsseldorf"},
-        {"x": 7.28, "y": 51.31, "name": "Dortmund"},
-        {"x": 7.1, "y": 51.27, "name": "Essen"},
-        {"x": 12.23, "y": 51.2, "name": "Leipzig"},
-        {"x": 8.48, "y": 53.5, "name": "Bremen"},
-        {"x": 13.44, "y": 51.2, "name": "Dresden"},
-        {"x": 9.43, "y": 52.22, "name": "Hanover"}
+        {"x": 13.40514, "y": 52.5246, "name": "Berlin"},
+        {"x": 9.994583, "y": 53.5544, "name": "Hamburg"},
+        {"x": 11.5755, "y": 48.1374, "name": "München"},
+        {"x": 6.95000, "y": 50.9333, "name": "Köln"},
+        {"x": 8.68333, "y": 50.1167, "name": "Frankfurt"},
+        {"x": 9.1770, "y": 48.7823, "name": "Stuttgart"},
+        {"x": 6.8121, "y": 51.2205, "name": "Düsseldorf"},
+        {"x": 7.4660, "y": 51.5149, "name": "Dortmund"},
+        {"x": 7.0086, "y": 51.4624, "name": "Essen"},
+        {"x": 12.3713, "y": 51.3396, "name": "Leipzig"},
+        {"x": 8.8077, "y": 53.07516, "name": "Bremen"},
+        {"x": 13.7500, "y": 51.0500, "name": "Dresden"},
+        {"x": 9.7332, "y": 52.3705, "name": "Hannover"}
     ]
 }
 ```
@@ -64,33 +74,42 @@ Pathfinder includes the following algorithms:
 
 ## WebUI
 Pathfinder comes with a simple to use webinterface. 
-- ```--problems``` specify the folder that contains the problem-sets
-- ```--address``` to listen for incoming connections
+- ```--problem``` specify the problemset (make sure paths within the file are correct)
+- ```--bind``` address to listen for incoming connections
 
 Communication between the solver and the webapp is done using a websocket, enabling for bi-directional 
 real-time communication. The webapp is done using [typescript](https://www.typescriptlang.org/) and [reactjs](https://reactjs.org/).
 
-![WebUI](https://hobbystudent.de/img/pathfinder_s.png "WebUI")
+![WebUI](https://hobbystudent.de/img/webapp.gif "WebUI")
 
 ## CLI
 Pathfinder can be run from the command-line as well.
-- ```--problem``` specify the file that contains the problem
-- ```--algorithm``` specify the algorithm to use
-
 
 Example usage:
 ```
-[traveller@mchn bin]$ ./pathfinder cli --algorithm="bruteforce" --problem="../samples/germany12.json"
+[traveller@mchn bin]$ ./pathfinder --algorithm="bruteforce" --problem="samples/germany13.json"
 ```
 Output will look like:
 ```
 2019/05/20 01:57:07 running as cli
 2019/05/20 01:57:07 solving problemset with 13 entries using bruteforce
-2019/05/20 01:57:07 started session{sessionId: 1, algorithm: 'Bruteforce', problem: 'Germany 13', state: Running, runtime: 83.227µs}
-2019/05/20 01:57:57 finished execution of session{sessionId: 1, algorithm: 'Bruteforce', problem: 'Germany 13', state: Finished, runtime: 50.555430822s}
-2019/05/20 01:57:57 { Hamburg <-> Berlin <-> Dresden <-> Leipzig <-> Munich <-> Stuttgart <-> Frankfurt <-> Cologne <-> Düsseldorf <-> Essen <-> Dortmund <-> Bremen <-> Hanover }
+2019/05/20 01:58:33 Finished execution of problemset "Germany 13":
+        Route: Berlin <-> Leipzig <-> Hannover <-> Hamburg <-> Bremen <-> Dortmund <-> Essen <-> Düsseldorf <-> Köln <-> Frankfurt <-> Stuttgart <-> München <-> Dresden
+        Distance: 2316.814589
+        Time: 71.207625s
 ```
 
 ## Docker
-You can easily run the application within docker:
-docker build . -f DockerWeb -t pathfinder
+You can run the application within docker:
+
+1. Build the webapp:
+```docker build -f webapp.dockerfile -t pathfinder .```
+2. Run the webapp:
+```docker run -d -p 8080:80 pathfinder```
+3. Open the browser: http://localhost:8080
+4. Build the solver:
+```docker build -f solver.dockerfile -t solver .```
+5. Run the solver:
+```
+docker run -p 8091:8091 --rm --name solver solver --algorithm="bruteforce" --problem="/solver/samples/germany13.json" --bind=":8091"
+```

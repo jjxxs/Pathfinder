@@ -12,7 +12,7 @@ import (
 
 func main() {
 	app := cli.NewApp()
-	app.Name = "TspSolver"
+	app.Name = "Pathfinder"
 	app.Usage = "A solver for the travelling salesman problem"
 	app.HideVersion = true
 	app.Flags = []cli.Flag{
@@ -26,7 +26,7 @@ func main() {
 		},
 		cli.StringFlag{
 			Name:  "bind",
-			Usage: "interactive view",
+			Usage: "address to listen for websocket-connections",
 		},
 	}
 	app.Action = startCli
