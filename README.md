@@ -23,10 +23,10 @@ GLOBAL OPTIONS:
 ```
 
 ## Features
-Pathfinder is written in the go programming language and makes use of the languages features such as go-routines,
+Pathfinder is written in go and makes use of languages features such as go-routines,
 channels and field-tags.
 
-Instances/Problems are defined using JSON, e.g.:
+Problems are defined as JSON-Objects and can be imported from Files:
 ```
 {
     "info": {
@@ -60,40 +60,42 @@ Instances/Problems are defined using JSON, e.g.:
     ]
 }
 ```
-They can include an image of a map to work on. Check out the ```/samples```-folder.
+Problems can include an image for visualization of the solving-process. Check out the ```/samples```-folder.
+
 There are two types of problems:
 - Geographic: Distances between the points are calculated using the haversine-function
 - Euclidean: Distances between the points are calculated using pythagoras
 
-User defined problems can be added by simply pointing to a JSON-file using the ```--problem```-switch.
+To add a new problem that you want to solve, simply create a file containing a JSON-Object as seen above.
+To run the solver, invoke it with the ```--problem```-switch which points to the newly created file.
 
-Pathfinder includes the following algorithms:
+Algorithms included:
 - Bruteforce
-- Held-Karp (dynamic programming)
-- Branch-and-Bound
+- Held-Karp
+- Minimum-Spanning-Tree Heuristic
 
-## WebUI
-Pathfinder comes with a simple to use webinterface. 
-- ```--problem``` specify the problemset (make sure paths within the file are correct)
-- ```--bind``` address to listen for incoming connections
+## WebApp
+Pathfinder comes with a simple web-interface. To use it, specify the address to listen on for
+incoming connections with the```--bind```-flag.
 
 Communication between the solver and the webapp is done using a websocket, enabling for bi-directional 
-real-time communication. The webapp is done using [typescript](https://www.typescriptlang.org/) and [reactjs](https://reactjs.org/).
+real-time communication. The webapp is done using [TypeScript](https://www.typescriptlang.org/) and [ReactJs](https://reactjs.org/).
 
-![WebUI](https://hobbystudent.de/img/webapp.gif "WebUI")
+![WebUI](https://hobbystudent.de/img/webapp_small.gif "WebUI")
 
 ## CLI
-Pathfinder can be run from the command-line as well.
+The solver can be run without the webapp by omitting the ```-bind```-flag. Progress will be shown by outputting
+information to the console.
 
 Example usage:
 ```
 [traveller@mchn bin]$ ./pathfinder --algorithm="bruteforce" --problem="samples/germany13.json"
 ```
-Output will look like:
+Example output:
 ```
 2019/05/20 01:57:07 running as cli
 2019/05/20 01:57:07 solving problemset with 13 entries using bruteforce
-2019/05/20 01:58:33 Finished execution of problemset "Germany 13":
+2019/05/20 01:58:18 Finished execution of problemset "Germany 13":
         Route: Berlin <-> Leipzig <-> Hannover <-> Hamburg <-> Bremen <-> Dortmund <-> Essen <-> Düsseldorf <-> Köln <-> Frankfurt <-> Stuttgart <-> München <-> Dresden
         Distance: 2316.814589
         Time: 71.207625s
