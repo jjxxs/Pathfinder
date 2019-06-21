@@ -13,3 +13,6 @@
 
 # GoLand project files
 .idea/
+
+# node_modules
+webui/node_modules

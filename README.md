@@ -91,6 +91,6 @@ Output will look like:
 2019/05/20 01:57:57 { Hamburg <-> Berlin <-> Dresden <-> Leipzig <-> Munich <-> Stuttgart <-> Frankfurt <-> Cologne <-> Düsseldorf <-> Essen <-> Dortmund <-> Bremen <-> Hanover }
 ```
 
-## ToDo:
-- Connect frontend to backend
-- Implement missing algorithms
+## Docker
+You can easily run the application within docker:
+docker build . -f DockerWeb -t pathfinder
