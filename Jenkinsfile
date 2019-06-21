@@ -23,15 +23,15 @@ pipeline {
                 docker { image 'obraun/vss-jenkins' }
             }   
             steps {
-                sh 'golangci-lint run --deadline 20m --enable-all'
+                sh 'cd algorithm && golangci-lint run --deadline 20m --enable-all'
+                sh 'cd problem && golangci-lint run --deadline 20m --enable-all'
             }
         }
-        stage('Build Docker Image') {
-            agent {
-                label 'master'
-            }
+        stage('Docker') {
+            agent any
             steps {
-                sh "docker-build-and-push -b ${BRANCH_NAME}"
+                sh "docker-build-and-push -b ${BRANCH_NAME} -s webapp -f webapp.dockerfile"
+                sh "docker-build-and-push -b ${BRANCH_NAME} -s solver -f solver.dockerfile"
             }
         }
     }
