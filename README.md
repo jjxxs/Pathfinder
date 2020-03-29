@@ -1,4 +1,4 @@
-![Icon](https://hobbystudent.de/img/icon_s.png "Icon")
+![Icon](icon.png "Icon")
 
 # Pathfinder
 Yet another solver for the [Traveling Salesman Problem](https://en.wikipedia.org/wiki/Travelling_salesman_problem).
@@ -81,7 +81,7 @@ incoming connections with the```--bind```-flag.
 Communication between the solver and the webapp is done using a websocket, enabling for bi-directional 
 real-time communication. The webapp is done using [TypeScript](https://www.typescriptlang.org/) and [ReactJs](https://reactjs.org/).
 
-![WebUI](https://hobbystudent.de/img/webapp_small.gif "WebUI")
+![WebUI](webapp_small.gif "WebUI")
 
 ## CLI
 The solver can be run without the webapp by omitting the ```-bind```-flag. Progress will be shown by outputting
